@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Sign Up</title>
+</head>
+<body>
+    <h1>Create Account</h1>
+
+    <form>
+        <label for="full-name">Full Name:</label>
+        <input type="text" id="full-name" name="full-name" required><br>
+
+        <label for="signup-email">Email Address:</label>
+        <input type="email" id="signup-email" name="signup-email" required><br>
+
+        <label for="signup-pass">Password:</label>
+        <input type="password" id="signup-pass" name="signup-pass" minlength="8" required><br>
+
+        <label for="confirm-pass">Confirm Password:</label>
+        <input type="password" id="confirm-pass" name="confirm-pass" minlength="8" required><br>
+
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <p>Already have an account? <a href="account.html">Log In</a></p>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Account - Jewelry Shop</title>
+</head>
+<body>
+
+<header>
+    <h1>Welcome, Lyza!</h1>
+
+    <nav>
+        <a href="#">Order History</a> |
+        <a href="#">Profile Settings</a> |
+        <a href="#">Wishlist</a> |
+        <a href="signup.html">Logout</a>
+    </nav>
+</header>
+
+<hr>
+
+<main>
+    <h2>Previous Purchases</h2>
+    <details>
+        <summary>Order #1001 - Gold Necklace</summary>
+        <dl>
+            <dt>Product</dt>
+            <dd>Gold Necklace</dd>
+
+            <dt>Material</dt>
+            <dd>18K Gold</dd>
+
+            <dt>Price</dt>
+            <dd>Php9,900</dd>
+
+            <dt>Order Date</dt>
+            <dd>January 10, 2026</dd>
+
+            <dt>Status</dt>
+            <dd>Delivered</dd>
+        </dl>
+    </details>
+
+    <br>
+    <details>
+        <summary>Order #1002 - Silver Bracelet</summary>
+        <dl>
+            <dt>Product</dt>
+            <dd>Silver Bracelet</dd>
+
+            <dt>Material</dt>
+            <dd>Sterling Silver</dd>
+
+            <dt>Price</dt>
+            <dd>Php4,800</dd>
+
+            <dt>Order Date</dt>
+            <dd>February 02, 2026</dd>
+
+            <dt>Status</dt>
+            <dd>Shipped</dd>
+        </dl>
+    </details>
+
+</main>
+
+</body>
+</html>
