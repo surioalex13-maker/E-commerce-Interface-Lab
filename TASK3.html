@@ -2,35 +2,50 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="stylesheet.css">
   <title>Product Details</title>
 </head>
 <body>
+
+<header>
+    <h1>ShopEase</h1>
+    <nav aria-label="Main Navigation">
+      <ul>
+        <li><a href="TASK1.html">Home</a></li>
+        <li><a href="TASK2.html">Products</a></li>
+        <li><a href="TASK4.html">Cart</a></li>
+      </ul>
+    </nav>
+  </header>
 
 <main>
 
   <article>
     <h1>Gold Necklace</h1>
-    <img src="C:\Users\admin\OneDrive\Pictures\Screenshots\1.avif" alt="Gold Necklace" width="70">
-    <p>$9,999</p>
+    <img src="C:\Users\admin\OneDrive\Pictures\Screenshots\1.avif" alt="Gold Necklace">
+    <p>Php9,999</p>
   </article>
 
   <section>
     <h2>Technical Specifications</h2>
-    <table>
-      <caption>Product Specifications</caption>
-      <tr>
-        <th scope="row">karat(K)</th>
-        <td>18K = 75% gold</td>
-      </tr>
-      <tr>
-        <th scope="row">Gold Content</th>
-        <td>91.6%</td>
-      </tr>
-      <tr>
-        <th scope="row">Color Tone</th>
-        <td>Yellow Gold</td>
-      </tr>
-    </table>
+    <div class="table-responsive">
+      <table>
+        <caption>Product Specifications</caption>
+        <tr>
+          <th scope="row">karat(K)</th>
+          <td>18K = 75% gold</td>
+        </tr>
+        <tr>
+          <th scope="row">Gold Content</th>
+          <td>91.6%</td>
+        </tr>
+        <tr>
+          <th scope="row">Color Tone</th>
+          <td>Yellow Gold</td>
+        </tr>
+      </table>
+    </div>
   </section>
 
   <section>
@@ -38,7 +53,7 @@
     <form>
       <label for="quantity">Quantity:</label>
       <input type="number" id="quantity" name="quantity" min="1" value="1">
-      <button type="submit">Add to Cart</button>
+      <a href="TASK4.html" role="button">Add To Cart</a>
     </form>
   </section>
 
@@ -62,6 +77,52 @@
   </section>
 
 </main>
+
+<div class="back-button-container">
+  <a href="TASK2.html" role="button" class="back-button">Back</a>
+</div>
+
+<script>
+  // update product info based on ?item= value
+  const params = new URLSearchParams(window.location.search);
+  const item = params.get('item');
+  const data = {
+    necklace: {
+      title: 'Gold Necklace',
+      price: 'Php9,999',
+      img: 'C:\\Users\\admin\\OneDrive\\Pictures\\Screenshots\\1.avif',
+      specs: [
+        ['karat(K)', '18K = 75% gold'],
+        ['Gold Content', '91.6%'],
+        ['Color Tone', 'Yellow Gold']
+      ]
+    },
+    bracelet: {
+      title: 'Silver Bracelet',
+      price: 'Php5,000',
+      img: 'C:\\Users\\admin\\OneDrive\\Pictures\\Screenshots\\2.avif',
+      specs: [
+        ['Material', 'Sterling Silver'],
+        ['Length', '7 inches']
+      ]
+    }
+  };
+  const product = data[item] || data['necklace'];
+  document.querySelector('article h1').textContent = product.title;
+  const img = document.querySelector('article img');
+  img.src = product.img;
+  img.alt = product.title;
+  document.querySelector('article p').textContent = product.price;
+  // rebuild specs table
+  const tbody = document.querySelector('table');
+  tbody.innerHTML = '<caption>Product Specifications</caption>' +
+    product.specs.map(s=>`<tr><th scope="row">${s[0]}</th><td>${s[1]}</td></tr>`).join('');
+  // update add to cart link
+  const addBtn = document.querySelector('a[role="button"][href^="TASK4.html"]');
+  if(addBtn){
+    addBtn.href = 'TASK4.html?item=' + item;
+  }
+</script>
 
 </body>
 </html>

@@ -2,25 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="stylesheet.css">
   <title>Your Cart</title>
 </head>
 <body>
 
-<main>
+<header>
+  <h1>ShopEase</h1>
+  <nav aria-label="Main Navigation">
+    <ul>
+      <li><a href="TASK1.html">Home</a></li>
+      <li><a href="TASK2.html">Products</a></li>
+      <li><a href="TASK4.html">Cart</a></li>
+    </ul>
+  </nav>
+</header>
 
+<main>
   <h1>Shopping Cart</h1>
 
   <section aria-live="polite">
     <p>Your cart is currently empty.</p>
   </section>
 
-  <ul>
+  <ul class="cart-items">
     <li>
-      <img src="C:\Users\admin\OneDrive\Pictures\Screenshots\1.avif" alt="Gold Necklace" width="70">
-      <h3>Gold Necklace</h3>
-      <p>Php9,999</p>
-      <label for="qty1">Quantity:</label>
-      <input type="number" id="qty1" min="1" value="1">
+      <img src="C:\Users\admin\OneDrive\Pictures\Screenshots\1.avif" alt="Gold Necklace">
+      <div>
+        <h3>Gold Necklace</h3>
+        <p>Php9,999</p>
+        <label for="qty1">Quantity:</label>
+        <input type="number" id="qty1" min="1" value="1">
+      </div>
     </li>
   </ul>
 
@@ -32,6 +46,31 @@
   <a href="TASK5.html" role="button">Proceed to Checkout</a>
 
 </main>
+
+<div class="back-button-container">
+  <a href="TASK3.html" role="button" class="back-button">Back</a>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const item = params.get('item');
+  const products = {
+    necklace: { name: 'Gold Necklace', price: 'Php9,999', img: 'C:\\Users\\admin\\OneDrive\\Pictures\\Screenshots\\1.avif' },
+    bracelet: { name: 'Silver Bracelet', price: 'Php5,000', img: 'C:\\Users\\admin\\OneDrive\\Pictures\\Screenshots\\2.avif' }
+  };
+  const product = products[item] || products['necklace'];
+  // update cart entry
+  const li = document.querySelector('.cart-items li');
+  if(li) {
+    li.querySelector('img').src = product.img;
+    li.querySelector('img').alt = product.name;
+    li.querySelector('h3').textContent = product.name;
+    li.querySelector('p').textContent = product.price;
+  }
+  // update subtotal
+  const subtotal = document.querySelector('section h2 + p');
+  if(subtotal) subtotal.textContent = product.price;
+</script>
 
 </body>
 </html>

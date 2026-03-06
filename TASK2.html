@@ -2,35 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Products - ShopEase</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="stylesheet.css">
+  <title>ShopEase</title>
 </head>
 <body>
 
 <header>
-  <h1>Products</h1>
+  <h1>ShopEase</h1>
+  <nav aria-label="Main Navigation">
+    <ul>
+      <li><a href="TASK1.html">Home</a></li>
+      <li><a href="TASK2.html">Products</a></li>
+      <li><a href="TASK4.html">Cart</a></li>
+      <li><a href="TASK5.html">Checkout</a></li>
+    </ul>
+  </nav>
 </header>
 
 <main>
-
-  <section aria-labelledby="product-grid">
-    <h2 id="product-grid">Available Products</h2>
-
-    <article>
-      <img src="C:\Users\admin\OneDrive\Pictures\Screenshots\1.avif" alt="Gold Necklace" width="70">
-      <h3>Gold Necklace</h3>
-      <p>$9,999</p>
-      <a href="detailnecklace.html">View Details</a>
-    </article>
-
-    <article>
-      <img src="C:\Users\admin\OneDrive\Pictures\Screenshots\2.avif" alt="Silver Bracelet" width="70">
-      <h3>Silver Bracelet</h3>
-      <p>Php5,000</p>
-      <a href="detailbracelet.html">View Details</a>
-    </article>
-
-  </section>
-
   <aside>
     <h2>Filters</h2>
     <form>
@@ -48,7 +38,32 @@
     </form>
   </aside>
 
+  <section aria-labelledby="product-grid" class="products-section">
+    <h2 id="product-grid">Available Products</h2>
+    <div class="products-grid">
+      <article>
+        <img src="C:\Users\admin\OneDrive\Pictures\Screenshots\1.avif" alt="Gold Necklace">
+        <h3>Gold Necklace</h3>
+        <p>Php9,999</p>
+        <a href="detailnecklace.html" role="button">View Details</a>
+      <a href="TASK3.html?item=necklace" role="button" class="add-cart">Add to Cart</a>
+      </article>
+
+      <article>
+        <img src="C:\Users\admin\OneDrive\Pictures\Screenshots\2.avif" alt="Silver Bracelet">
+        <h3>Silver Bracelet</h3>
+        <p>Php5,000</p>
+        <a href="detailbracelet.html" role="button">View Details</a>
+      <a href="TASK3.html?item=bracelet" role="button" class="add-cart">Add to Cart</a>
+      </article>
+    </div>
+  </section>
+
 </main>
+
+<div class="back-button-container">
+  <a href="TASK1.html" role="button" class="back-button">Back</a>
+</div>
 
 </body>
 </html>

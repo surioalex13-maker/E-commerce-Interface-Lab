@@ -2,48 +2,62 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="stylesheet.css">
   <title>Checkout</title>
 </head>
 <body>
 
-<main>
+<header>
+  <h1>ShopEase</h1>
+  <nav aria-label="Main Navigation">
+    <ul>
+      <li><a href="TASK1.html">Home</a></li>
+      <li><a href="TASK2.html">Products</a></li>
+      <li><a href="TASK4.html">Cart</a></li>
+    </ul>
+  </nav>
+</header>
 
-  <h1>Checkout</h1>
+<main class="checkout-container">
+  <div>
+    <h1>Checkout</h1>
 
-  <section>
-    <h2>Shipping Information</h2>
-    <form>
-      <fieldset>
-        <legend>Shipping Address</legend>
+    <section>
+      <h2>Shipping Information</h2>
+      <form>
+        <fieldset>
+          <legend>Shipping Address</legend>
 
-        <label for="fullname">Full Name</label>
-        <input type="text" id="fullname" required>
+          <label for="fullname">Full Name</label>
+          <input type="text" id="fullname" required>
 
-        <label for="street">Street Address</label>
-        <input type="text" id="street" required>
+          <label for="street">Street Address</label>
+          <input type="text" id="street" required>
 
-        <label for="zip">ZIP Code</label>
-        <input type="text" id="zip" required>
-      </fieldset>
-    </form>
-  </section>
+          <label for="zip">ZIP Code</label>
+          <input type="text" id="zip" required>
+        </fieldset>
+      </form>
+    </section>
 
-  <section>
-    <h2>Payment Method</h2>
-    <form>
-      <label>
-        <input type="radio" name="payment" value="credit" required>
-        Credit Card
-      </label>
+    <section>
+      <h2>Payment Method</h2>
+      <form>
+        <label>
+          <input type="radio" name="payment" value="credit" required>
+          Credit Card
+        </label>
 
-      <label>
-        <input type="radio" name="payment" value="paypal">
-        PayPal
-      </label>
+        <label>
+          <input type="radio" name="payment" value="paypal">
+          PayPal
+        </label>
 
-      <button type="submit">Place Order</button>
-    </form>
-  </section>
+        <a href="TASK6.html" role="button">Place Order</a>
+      </form>
+    </section>
+  </div>
 
   <aside>
     <h2>Order Summary</h2>
@@ -53,6 +67,10 @@
   </aside>
 
 </main>
+
+<div class="back-button-container">
+  <a href="TASK4.html" role="button" class="back-button">Back</a>
+</div>
 
 </body>
 </html>

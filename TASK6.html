@@ -4,50 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Account - Sign Up</title>
+    <link rel="stylesheet" href="stylesheet.css">
 </head>
 <body>
+<header>
+    <h1>ShopEase</h1>
+    <nav aria-label="Main Navigation">
+        <ul>
+            <li><a href="TASK1.html">Home</a></li>
+            <li><a href="TASK2.html">Products</a></li>
+            <li><a href="TASK4.html">Cart</a></li>
+        </ul>
+    </nav>
+</header>
+<main class="signup-page">
     <h1>Create Account</h1>
 
     <form>
         <label for="full-name">Full Name:</label>
-        <input type="text" id="full-name" name="full-name" required><br>
+        <input type="text" id="full-name" name="full-name" required>
 
         <label for="signup-email">Email Address:</label>
-        <input type="email" id="signup-email" name="signup-email" required><br>
+        <input type="email" id="signup-email" name="signup-email" required>
 
         <label for="signup-pass">Password:</label>
-        <input type="password" id="signup-pass" name="signup-pass" minlength="8" required><br>
+        <input type="password" id="signup-pass" name="signup-pass" minlength="8" required>
 
         <label for="confirm-pass">Confirm Password:</label>
-        <input type="password" id="confirm-pass" name="confirm-pass" minlength="8" required><br>
+        <input type="password" id="confirm-pass" name="confirm-pass" minlength="8" required>
 
         <button type="submit">Sign Up</button>
     </form>
 
     <p>Already have an account? <a href="account.html">Log In</a></p>
+</main>
 </body>
 </html>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>My Account - Jewelry Shop</title>
-</head>
-<body>
-
 <header>
-    <h1>Welcome, Lyza!</h1>
+    <h1>Welcome To ShopEase!</h1>
 
-    <nav>
-        <a href="#">Order History</a> |
-        <a href="#">Profile Settings</a> |
-        <a href="#">Wishlist</a> |
-        <a href="signup.html">Logout</a>
+    <nav aria-label="Main Navigation">
+        <ul>
+            <li><a href="TASK1.html">Home</a></li>
+            <li><a href="TASK2.html">Products</a></li>
+            <li><a href="TASK4.html">Cart</a></li>
+            <li><a href="#">Order History</a></li>
+            <li><a href="#">Profile Settings</a></li>
+            <li><a href="#">Wishlist</a></li>
+            <li><a href="signup.html">Logout</a></li>
+        </ul>
     </nav>
 </header>
-
-<hr>
 
 <main>
     <h2>Previous Purchases</h2>
@@ -71,7 +79,6 @@
         </dl>
     </details>
 
-    <br>
     <details>
         <summary>Order #1002 - Silver Bracelet</summary>
         <dl>
@@ -93,6 +100,10 @@
     </details>
 
 </main>
+
+<div class="back-button-container">
+  <a href="TASK5.html" role="button" class="back-button">Back</a>
+</div>
 
 </body>
 </html>

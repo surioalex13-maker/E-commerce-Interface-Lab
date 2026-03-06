@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="stylesheet.css">
   <title>ShopEase - Home</title>
 </head>
 <body>
@@ -21,34 +22,48 @@
 
 <main>
 
-  <section aria-labelledby="hero-title">
+  <section class="hero" aria-labelledby="hero-title">
     <h1 id="hero-title">Welcome to ShopEase</h1>
-    <p>Your one-stop shops for the best deals online.</p>
-    <button type="button">Shop Now</button>
+    
+    <a href="TASK2.html">
+    <button>Shop Now</button>
+    </a>
   </section>
 
-  <section aria-labelledby="featured-products">
+  <section aria-labelledby="featured-products" class="products-section">
     <h2 id="featured-products">Featured Products</h2>
-    <article>
-      <h3> Gold Necklace</h3>
-      <p>Php9,999</p>
-    </article>
-    <article>
-      <h3>Silver Bracelet</h3>
-      <p>Php5,000</p>
-    </article>
+    <div class="products-grid">
+      <article>
+        <img src="C:\Users\admin\OneDrive\Pictures\Screenshots\1.avif" alt="Gold Necklace">
+        <h3>Gold Necklace</h3>
+        <p>Php9,999</p>
+        <a href="TASK3.html" role="button">View Details</a>
+      </article>
+      <article>
+        <img src="C:\Users\admin\OneDrive\Pictures\Screenshots\2.avif" alt="Silver Bracelet">
+        <h3>Silver Bracelet</h3>
+        <p>Php5,000</p>
+        <a href="TASK3.html" role="button">View Details</a>
+      </article>
+    </div>
   </section>
 
-  <section aria-labelledby="discounted-products">
+  <section aria-labelledby="discounted-products" class="products-section">
     <h2 id="discounted-products">Discounted Products</h2>
-    <article>
-      <h3>Running Shoes</h3>
-      <p><del>Php250</del> Php200</p>
-    </article>
-    <article>
-      <h3>Backpack</h3>
-      <p><del>Php200</del> Php150</p>
-    </article>
+    <div class="products-grid">
+      <article>
+        <img src="C:\Users\admin\OneDrive\Pictures\Screenshots\1.avif" alt="Running Shoes">
+        <h3>Running Shoes</h3>
+        <p><del>Php250</del> Php200</p>
+        <a href="TASK3.html" role="button">View Details</a>
+      </article>
+      <article>
+        <img src="C:\Users\admin\OneDrive\Pictures\Screenshots\2.avif" alt="Backpack">
+        <h3>Backpack</h3>
+        <p><del>Php200</del> Php150</p>
+        <a href="TASK3.html" role="button">View Details</a>
+      </article>
+    </div>
   </section>
 
 </main>
