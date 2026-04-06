@@ -4,125 +4,114 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="stylesheet.css">
-  <title>Product Details</title>
+  <title>ShopEase - Products</title>
 </head>
-<body>
-
-<header>
+<body data-page="products">
+  <header>
     <h1>ShopEase</h1>
     <nav aria-label="Main Navigation">
       <ul>
         <li><a href="TASK1.html">Home</a></li>
         <li><a href="TASK2.html">Products</a></li>
         <li><a href="TASK4.html">Cart</a></li>
+        <li><a href="TASK5.html">Checkout</a></li>
+        <li><a href="TASK6.html">Orders</a></li>
       </ul>
     </nav>
   </header>
 
-<main>
+  <main>
+    <aside>
+      <h2>Filters</h2>
+      <form id="filter-form">
+        <fieldset>
+          <legend>Category</legend>
+          <label><input type="checkbox" name="category" value="necklace"> Necklace</label>
+          <label><input type="checkbox" name="category" value="bracelet"> Bracelet</label>
+        </fieldset>
 
-  <article>
-    <h1>Gold Necklace</h1>
-    <img src="C:\Users\admin\OneDrive\Pictures\Screenshots\1.avif" alt="Gold Necklace">
-    <p>Php9,999</p>
-  </article>
+        <fieldset>
+          <legend>Price Range</legend>
+          <label><input type="radio" name="price" value="all" checked> All Prices</label>
+          <label><input type="radio" name="price" value="under-7000"> Up to Php7,000</label>
+          <label><input type="radio" name="price" value="over-7000"> Over Php7,000</label>
+        </fieldset>
 
-  <section>
-    <h2>Technical Specifications</h2>
-    <div class="table-responsive">
-      <table>
-        <caption>Product Specifications</caption>
-        <tr>
-          <th scope="row">karat(K)</th>
-          <td>18K = 75% gold</td>
-        </tr>
-        <tr>
-          <th scope="row">Gold Content</th>
-          <td>91.6%</td>
-        </tr>
-        <tr>
-          <th scope="row">Color Tone</th>
-          <td>Yellow Gold</td>
-        </tr>
-      </table>
-    </div>
-  </section>
+        <label for="search-input">Search</label>
+        <input id="search-input" name="search" type="text" placeholder="Search products">
+      </form>
+    </aside>
 
-  <section>
-    <h2>Purchase</h2>
-    <form>
-      <label for="quantity">Quantity:</label>
-      <input type="number" id="quantity" name="quantity" min="1" value="1">
-      <a href="TASK4.html" role="button">Add To Cart</a>
-    </form>
-  </section>
+    <section aria-labelledby="product-grid" class="products-section">
+      <h2 id="product-grid">Available Products</h2>
+      <p class="filter-summary" id="filter-summary" aria-live="polite"></p>
+      <div class="products-grid" id="catalog-grid"></div>
+    </section>
+  </main>
 
-  <section>
-    <h2>User Reviews</h2>
+  <div class="back-button-container">
+    <a href="TASK1.html" role="button" class="back-button">Back</a>
+  </div>
 
-    <article>
-      <h3>Alex S.</h3>
-      <blockquote>
-        Great product!
-      </blockquote>
-    </article>
-
-    <article>
-      <h3>Lyza C.</h3>
-      <blockquote>
-        Excellent value for the price.
-      </blockquote>
-    </article>
-
-  </section>
-
-</main>
-
-<div class="back-button-container">
-  <a href="TASK2.html" role="button" class="back-button">Back</a>
-</div>
-
-<script>
-  // update product info based on ?item= value
-  const params = new URLSearchParams(window.location.search);
-  const item = params.get('item');
-  const data = {
-    necklace: {
-      title: 'Gold Necklace',
-      price: 'Php9,999',
-      img: 'C:\\Users\\admin\\OneDrive\\Pictures\\Screenshots\\1.avif',
-      specs: [
-        ['karat(K)', '18K = 75% gold'],
-        ['Gold Content', '91.6%'],
-        ['Color Tone', 'Yellow Gold']
-      ]
-    },
-    bracelet: {
-      title: 'Silver Bracelet',
-      price: 'Php5,000',
-      img: 'C:\\Users\\admin\\OneDrive\\Pictures\\Screenshots\\2.avif',
-      specs: [
-        ['Material', 'Sterling Silver'],
-        ['Length', '7 inches']
-      ]
-    }
-  };
-  const product = data[item] || data['necklace'];
-  document.querySelector('article h1').textContent = product.title;
-  const img = document.querySelector('article img');
-  img.src = product.img;
-  img.alt = product.title;
-  document.querySelector('article p').textContent = product.price;
-  // rebuild specs table
-  const tbody = document.querySelector('table');
-  tbody.innerHTML = '<caption>Product Specifications</caption>' +
-    product.specs.map(s=>`<tr><th scope="row">${s[0]}</th><td>${s[1]}</td></tr>`).join('');
-  // update add to cart link
-  const addBtn = document.querySelector('a[role="button"][href^="TASK4.html"]');
-  if(addBtn){
-    addBtn.href = 'TASK4.html?item=' + item;
-  }
-</script>
-
+  <script src="app.js" defer></script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="stylesheet.css">
+  <title>ShopEase - Products</title>
+</head>
+<body data-page="products">
+  <header>
+    <h1>ShopEase</h1>
+    <nav aria-label="Main Navigation">
+      <ul>
+        <li><a href="TASK1.html">Home</a></li>
+        <li><a href="TASK2.html">Products</a></li>
+        <li><a href="TASK4.html">Cart</a></li>
+        <li><a href="TASK5.html">Checkout</a></li>
+        <li><a href="TASK6.html">Orders</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <aside>
+      <h2>Filters</h2>
+      <form id="filter-form">
+        <fieldset>
+          <legend>Category</legend>
+          <label><input type="checkbox" name="category" value="necklace"> Necklace</label>
+          <label><input type="checkbox" name="category" value="bracelet"> Bracelet</label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Price Range</legend>
+          <label><input type="radio" name="price" value="all" checked> All Prices</label>
+          <label><input type="radio" name="price" value="under-7000"> Up to Php7,000</label>
+          <label><input type="radio" name="price" value="over-7000"> Over Php7,000</label>
+        </fieldset>
+
+        <label for="search-input">Search</label>
+        <input id="search-input" name="search" type="text" placeholder="Search products">
+      </form>
+    </aside>
+
+    <section aria-labelledby="product-grid" class="products-section">
+      <h2 id="product-grid">Available Products</h2>
+      <p class="filter-summary" id="filter-summary" aria-live="polite"></p>
+      <div class="products-grid" id="catalog-grid"></div>
+    </section>
+  </main>
+
+  <div class="back-button-container">
+    <a href="TASK1.html" role="button" class="back-button">Back</a>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
+
