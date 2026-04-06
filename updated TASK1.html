@@ -6,71 +6,44 @@
   <link rel="stylesheet" href="stylesheet.css">
   <title>ShopEase - Home</title>
 </head>
-<body>
+<body data-page="home">
+  <header>
+    <h1>ShopEase</h1>
+    <nav aria-label="Main Navigation">
+      <ul>
+        <li><a href="TASK1.html">Home</a></li>
+        <li><a href="TASK2.html">Products</a></li>
+        <li><a href="TASK4.html">Cart</a></li>
+        <li><a href="TASK5.html">Checkout</a></li>
+        <li><a href="TASK6.html">Orders</a></li>
+      </ul>
+    </nav>
+  </header>
 
-<header>
-  <h1>ShopEase</h1>
-  <nav aria-label="Main Navigation">
-    <ul>
-      <li><a href="#">Electronics</a></li>
-      <li><a href="#">Clothing</a></li>
-      <li><a href="#">Home & Living</a></li>
-      <li><a href="#">Accessories</a></li>
-    </ul>
-  </nav>
-</header>
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <h1 id="hero-title">Discover elegant accessories with a smarter shopping flow</h1>
+      <p>
+        SHOP NOW IN SHOPEASE
+      </p>
+      <a href="TASK2.html" role="button">Browse Products</a>
+    </section>
 
-<main>
+    <section aria-labelledby="featured-products" class="products-section">
+      <h2 id="featured-products">Featured Products</h2>
+      <div class="products-grid" data-list="featured"></div>
+    </section>
 
-  <section class="hero" aria-labelledby="hero-title">
-    <h1 id="hero-title">Welcome to ShopEase</h1>
-    
-    <a href="TASK2.html">
-    <button>Shop Now</button>
-    </a>
-  </section>
+    <section aria-labelledby="discounted-products" class="products-section">
+      <h2 id="discounted-products">Discounted Picks</h2>
+      <div class="products-grid" data-list="discounted"></div>
+    </section>
+  </main>
 
-  <section aria-labelledby="featured-products" class="products-section">
-    <h2 id="featured-products">Featured Products</h2>
-    <div class="products-grid">
-      <article>
-        <img src="C:\Users\admin\OneDrive\Pictures\Screenshots\1.avif" alt="Gold Necklace">
-        <h3>Gold Necklace</h3>
-        <p>Php9,999</p>
-        <a href="TASK3.html" role="button">View Details</a>
-      </article>
-      <article>
-        <img src="C:\Users\admin\OneDrive\Pictures\Screenshots\2.avif" alt="Silver Bracelet">
-        <h3>Silver Bracelet</h3>
-        <p>Php5,000</p>
-        <a href="TASK3.html" role="button">View Details</a>
-      </article>
-    </div>
-  </section>
+  <footer>
+    <p>&copy; 2026 ShopEase. All rights reserved.</p>
+  </footer>
 
-  <section aria-labelledby="discounted-products" class="products-section">
-    <h2 id="discounted-products">Discounted Products</h2>
-    <div class="products-grid">
-      <article>
-        <img src="C:\Users\admin\OneDrive\Pictures\Screenshots\1.avif" alt="Running Shoes">
-        <h3>Running Shoes</h3>
-        <p><del>Php250</del> Php200</p>
-        <a href="TASK3.html" role="button">View Details</a>
-      </article>
-      <article>
-        <img src="C:\Users\admin\OneDrive\Pictures\Screenshots\2.avif" alt="Backpack">
-        <h3>Backpack</h3>
-        <p><del>Php200</del> Php150</p>
-        <a href="TASK3.html" role="button">View Details</a>
-      </article>
-    </div>
-  </section>
-
-</main>
-
-<footer>
-  <p>&copy; 2026 ShopEase. All rights reserved.</p>
-</footer>
-
+  <script src="app.js" defer></script>
 </body>
 </html>
