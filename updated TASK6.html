@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopEase - Orders</title>
+  <link rel="stylesheet" href="stylesheet.css">
+</head>
+<body data-page="orders">
+  <header>
+    <h1>ShopEase</h1>
+    <nav aria-label="Main Navigation">
+      <ul>
+        <li><a href="TASK1.html">Home</a></li>
+        <li><a href="TASK2.html">Products</a></li>
+        <li><a href="TASK4.html">Cart</a></li>
+        <li><a href="TASK5.html">Checkout</a></li>
+        <li><a href="TASK6.html">Orders</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section>
+      <h1>Order Confirmation</h1>
+      <p id="order-empty-state" class="page-intro"></p>
+      <article class="order-card" id="latest-order"></article>
+    </section>
+
+    <section>
+      <h2>Purchase History</h2>
+      <div class="history-list" id="order-history"></div>
+    </section>
+
+    <div class="back-button-container">
+      <a href="TASK1.html" role="button" class="back-button">Continue Shopping</a>
+    </div>
+  </main>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
