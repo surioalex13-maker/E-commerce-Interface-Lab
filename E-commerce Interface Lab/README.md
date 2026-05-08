@@ -462,3 +462,12 @@ fetchApi("/products")
 2. Backend running
 3. Network tab shows POST request
 4. Check console for error messages
+
+Image Demo:
+<img width="1360" height="663" alt="Screenshot 2026-05-08 083443" src="https://github.com/user-attachments/assets/17eaba19-add1-48b0-bb1f-34cbb6c64099" />
+<img width="1366" height="768" alt="Screenshot 2026-05-08 085937" src="https://github.com/user-attachments/assets/3eeb6f7c-e3a5-4695-92b2-bcfc9a7a9024" />
+<img width="1366" height="768" alt="Screenshot 2026-05-08 090059" src="https://github.com/user-attachments/assets/946c2ce2-ccdb-465a-8a3f-697483abd2c7" />
+<img width="1358" height="609" alt="Screenshot 2026-05-08 090328" src="https://github.com/user-attachments/assets/45a8030f-4d6c-4812-bb5f-7c9ed7f7edba" />
+<img width="726" height="462" alt="Screenshot 2026-05-08 090503" src="https://github.com/user-attachments/assets/46cffa27-ed0c-4881-b84d-954279fe41a8" />
+<img width="523" height="512" alt="Screenshot 2026-05-08 090721" src="https://github.com/user-attachments/assets/864a22ed-a778-4c9c-90ba-a761cd8fa740" />
+<img width="727" height="498" alt="Screenshot 2026-05-08 091205" src="https://github.com/user-attachments/assets/f24ab01f-4cc8-4d5a-adce-24f6ecae2746" />
