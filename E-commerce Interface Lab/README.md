@@ -12,6 +12,7 @@ ShopEase Frontend is a modern e-commerce interface built with vanilla HTML, CSS,
 - **Product Filtering**: Filter by category, price range, and search terms
 - **Cart Management**: Add/remove items, update quantities with localStorage
 - **Order Processing**: Complete checkout flow with order submission to backend
+- **Spring Security Login**: Login/register page uses session cookies and CSRF-aware requests for protected API calls
 - **Order History**: View past orders and latest order details
 - **Responsive Design**: Mobile-friendly layout with CSS media queries (Lab 3)
 - **Accessibility**: Semantic HTML with proper ARIA labels
@@ -26,6 +27,7 @@ E-commerce Interface Lab/
 ├── TASK4.html               # Shopping cart
 ├── TASK5.html               # Checkout form
 ├── TASK6.html               # Orders history
+├── TASK7.html               # Login page for Lab 9 Spring Security
 ├── detailbracelet.html      # (Legacy) Bracelet details
 ├── detailnecklace.html      # (Legacy) Necklace details
 ├── app.js                   # Main JavaScript with Fetch API integration
@@ -234,6 +236,57 @@ function saveCart(cart) {
 ```
 
 ## Setup & Configuration
+
+## Lab 9 Spring Security
+
+Lab 9 secures the e-commerce flow with session-based authentication, role-based authorization, CSRF-aware requests, and validation error handling.
+
+### Security Architecture
+
+- The browser signs in from `TASK7.html` and the backend sets a `JSESSIONID` cookie.
+- Later `fetch` requests use `credentials: "include"` so the browser sends the session cookie automatically.
+- State-changing requests include an `X-CSRF-TOKEN` header when the backend exposes `/api/v1/auth/csrf`.
+- Protected checkout/order creation requires an authenticated session.
+- Product creation is treated as an admin-only protected action in the demo.
+- `app.js` handles `401 Unauthorized` by clearing the local session marker and asking the user to sign in.
+- `app.js` handles `403 Forbidden` with an access denied message for authenticated users without the required role.
+
+### Demo Accounts
+
+| Username | Password | Role |
+|----------|----------|------|
+| `customer` | `customer123` | CUSTOMER |
+| `admin` | `admin123` | ADMIN |
+
+### Validation Rules
+
+- Register: username must be 8 to 20 characters, password must be at least 8 characters, and role must be `CUSTOMER` or `ADMIN`.
+- Product: name and description must not be blank, price must be positive, and stock quantity must be positive.
+- Order: customer email must be valid, delivery address must not be blank, total amount must be positive, and at least one order item is required.
+- Validation failures are displayed as user-friendly field messages returned by the API.
+
+### API Reference
+
+| Method | Endpoint | Access |
+|--------|----------|--------|
+| GET | `/api/v1/products` | Public |
+| GET | `/api/v1/products/discounted` | Public |
+| GET | `/api/v1/auth/csrf` | Public |
+| POST | `/api/v1/auth/register` | Public |
+| POST | `/api/v1/auth/login` | Public with CSRF |
+| POST | `/api/v1/auth/logout` | Authenticated with CSRF |
+| GET | `/api/v1/auth/me` | Public session check |
+| POST | `/api/v1/orders` | Authenticated customer/admin with CSRF |
+| POST | `/api/v1/products` | Admin only with CSRF |
+
+### Testing Flow
+
+1. Open `TASK7.html`, register a user or use the demo accounts.
+2. Sign in as `customer` and verify that checkout can create an order.
+3. Use `Try Without Session` and verify the protected product action fails with `401`.
+4. Sign in as `customer` and try `Create Protected Product`; it should fail with `403`.
+5. Sign in as `admin` and create a protected product; it should succeed.
+6. While signed in as `admin`, click `Send Invalid Price`; the validation error should list the negative price rule.
 
 ### Prerequisites
 

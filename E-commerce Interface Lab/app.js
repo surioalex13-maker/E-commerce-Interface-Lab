@@ -4,15 +4,55 @@
  * Base API URL points to the Spring Boot backend running on localhost:8080
  */
 
-const API_BASE_URL = "http://localhost:8080/api";
+const API_BASE_URL = "http://localhost:8080/api/v1";
 const STORAGE_KEYS = {
   cart: "shopease-cart",
-  orders: "shopease-orders"
+  orders: "shopease-orders",
+  sessionUser: "shopease-session-user",
+  csrfToken: "shopease-csrf-token"
 };
 const SHIPPING_FEE = 99;
 
 // Global cache for products to minimize API calls
 let PRODUCTS = [];
+const FALLBACK_PRODUCTS = normalizeProducts([
+  {
+    id: 1,
+    name: "Gold Bracelet",
+    description: "Elegant 14k gold bracelet with intricate design",
+    price: 299.99,
+    category: "Bracelets",
+    stockQuantity: 15,
+    imageUrl: "https://via.placeholder.com/200?text=Gold+Bracelet"
+  },
+  {
+    id: 2,
+    name: "Silver Necklace",
+    description: "Classic sterling silver chain necklace",
+    price: 149.99,
+    category: "Necklaces",
+    stockQuantity: 25,
+    imageUrl: "https://via.placeholder.com/200?text=Silver+Necklace"
+  },
+  {
+    id: 3,
+    name: "Pearl Earrings",
+    description: "Freshwater pearl stud earrings",
+    price: 199.99,
+    category: "Earrings",
+    stockQuantity: 20,
+    imageUrl: "https://via.placeholder.com/200?text=Pearl+Earrings"
+  },
+  {
+    id: 4,
+    name: "Diamond Ring",
+    description: "1 carat diamond engagement ring",
+    price: 4999.99,
+    category: "Rings",
+    stockQuantity: 5,
+    imageUrl: "https://via.placeholder.com/200?text=Diamond+Ring"
+  }
+]);
 
 /**
  * Utility function to make API calls using Fetch API
@@ -26,9 +66,15 @@ let PRODUCTS = [];
 async function fetchApi(endpoint, options = {}) {
   try {
     const url = `${API_BASE_URL}${endpoint}`;
+    const method = (options.method || "GET").toUpperCase();
+    const csrfHeaders = method === "GET" || method === "HEAD" || method === "OPTIONS"
+      ? {}
+      : await getCsrfHeaders();
     const response = await fetch(url, {
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
+        ...csrfHeaders,
         ...options.headers
       },
       ...options
@@ -37,7 +83,8 @@ async function fetchApi(endpoint, options = {}) {
     // Check response.ok manually to handle non-2xx status codes
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+      const validationErrors = Array.isArray(errorData.errors) ? errorData.errors.join("; ") : "";
+      const errorMessage = validationErrors || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
       
       if (response.status === 404) {
         console.error("Resource not found:", errorMessage);
@@ -48,6 +95,13 @@ async function fetchApi(endpoint, options = {}) {
       } else if (response.status === 500) {
         console.error("Server error:", errorMessage);
         throw new Error("Server error. Please try again later.");
+      } else if (response.status === 401) {
+        console.error("Authentication required:", errorMessage);
+        localStorage.removeItem(STORAGE_KEYS.sessionUser);
+        throw new Error("Authentication required. Please log in first.");
+      } else if (response.status === 403) {
+        console.error("Access denied:", errorMessage);
+        throw new Error("Your account does not have permission for this action.");
       }
       
       throw new Error(errorMessage);
@@ -60,6 +114,29 @@ async function fetchApi(endpoint, options = {}) {
   }
 }
 
+async function fetchCsrfToken() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/csrf`, {
+      credentials: "include",
+      headers: { Accept: "application/json" }
+    });
+    const data = await response.json().catch(() => ({}));
+    const token = data.token || data.csrfToken || data._csrf || "";
+    if (response.ok && token) {
+      localStorage.setItem(STORAGE_KEYS.csrfToken, token);
+      return token;
+    }
+  } catch (error) {
+    console.warn("CSRF token endpoint is unavailable. Continuing for compatible backends.", error);
+  }
+  return localStorage.getItem(STORAGE_KEYS.csrfToken) || "";
+}
+
+async function getCsrfHeaders() {
+  const token = localStorage.getItem(STORAGE_KEYS.csrfToken) || await fetchCsrfToken();
+  return token ? { "X-CSRF-TOKEN": token } : {};
+}
+
 /**
  * Fetch all products from the backend API
  * Caches the results in the PRODUCTS global variable
@@ -69,14 +146,14 @@ async function fetchApi(endpoint, options = {}) {
 async function fetchProducts() {
   try {
     console.log("Fetching products from backend...");
-    const products = await fetchApi("/products");
+    const products = normalizeProducts(await fetchApi("/products"));
     PRODUCTS = products;
     console.log(`Successfully fetched ${products.length} products`);
     return products;
   } catch (error) {
     console.error("Failed to fetch products:", error);
-    // Return empty array on failure to gracefully degrade
-    return [];
+    PRODUCTS = FALLBACK_PRODUCTS;
+    return PRODUCTS;
   }
 }
 
@@ -88,7 +165,7 @@ async function fetchProducts() {
  */
 async function fetchProductById(id) {
   try {
-    return await fetchApi(`/products/${id}`);
+    return normalizeProduct(await fetchApi(`/products/${id}`));
   } catch (error) {
     console.error(`Failed to fetch product ${id}:`, error);
     return null;
@@ -117,10 +194,10 @@ async function fetchProductsByCategory(categoryName) {
  */
 async function fetchDiscountedProducts() {
   try {
-    return await fetchApi("/products/discounted");
+    return normalizeProducts(await fetchApi("/products/discounted"));
   } catch (error) {
     console.error("Failed to fetch discounted products:", error);
-    return [];
+    return PRODUCTS.slice(0, 4);
   }
 }
 
@@ -132,7 +209,7 @@ async function fetchDiscountedProducts() {
  */
 async function searchProducts(searchTerm) {
   try {
-    return await fetchApi(`/products/search?term=${encodeURIComponent(searchTerm)}`);
+    return normalizeProducts(await fetchApi(`/products/filter?filterType=name&filterValue=${encodeURIComponent(searchTerm)}`));
   } catch (error) {
     console.error(`Failed to search for products with term "${searchTerm}":`, error);
     return [];
@@ -160,6 +237,63 @@ async function createOrder(orderData) {
   }
 }
 
+async function registerAccount(username, password, role = "CUSTOMER") {
+  return await fetchApi("/auth/register", {
+    method: "POST",
+    body: JSON.stringify({ username, password, role })
+  });
+}
+
+async function loginAccount(username, password) {
+  const csrfToken = await fetchCsrfToken();
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json",
+      ...(csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {})
+    },
+    body: new URLSearchParams({ username, password, _csrf: csrfToken })
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  localStorage.setItem(STORAGE_KEYS.sessionUser, data.username || username);
+  await fetchCsrfToken();
+  return data;
+}
+
+async function logoutAccount() {
+  const csrfHeaders = await getCsrfHeaders();
+  const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+      ...csrfHeaders
+    }
+  });
+
+  localStorage.removeItem(STORAGE_KEYS.sessionUser);
+  localStorage.removeItem(STORAGE_KEYS.csrfToken);
+  return await response.json().catch(() => ({ message: "Logout complete" }));
+}
+
+async function fetchSession() {
+  return await fetchApi("/auth/me");
+}
+
+async function createProduct(productData) {
+  return await fetchApi("/products", {
+    method: "POST",
+    body: JSON.stringify(productData)
+  });
+}
+
 /**
  * Fetch all orders for a customer
  * 
@@ -183,7 +317,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const page = document.body.dataset.page;
 
   // Load products from backend for all pages that might need them
-  if (page === "home" || page === "products" || page === "details") {
+  if (["home", "products", "details", "cart", "checkout"].includes(page)) {
     await fetchProducts();
   }
 
@@ -205,6 +339,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       break;
     case "orders":
       initOrdersPage();
+      break;
+    case "login":
+      initLoginPage();
       break;
     default:
       break;
@@ -258,7 +395,7 @@ function initProductListing() {
       // Apply category filter
       if (selectedCategories.length > 0) {
         filtered = filtered.filter((product) =>
-          selectedCategories.includes(product.category)
+          selectedCategories.includes(normalizeCategory(product.category))
         );
       }
 
@@ -493,7 +630,9 @@ function initCheckoutPage() {
       <p><span>Shipping</span><strong>${formatCurrency(SHIPPING_FEE)}</strong></p>
       <p><span>Total</span><strong>${formatCurrency(total)}</strong></p>
     `;
-    message.textContent = "";
+    if (isAuthenticated()) {
+      message.textContent = "";
+    }
     return true;
   }
 
@@ -506,6 +645,11 @@ function initCheckoutPage() {
 
     if (!form.reportValidity()) {
       message.textContent = "Please complete all required checkout fields.";
+      return;
+    }
+
+    if (!isAuthenticated()) {
+      message.innerHTML = 'Please <a href="TASK7.html">sign in</a> before placing an order.';
       return;
     }
 
@@ -576,6 +720,152 @@ function initCheckoutPage() {
   });
 
   renderSummary();
+  requireSessionForPage(message);
+}
+
+function initLoginPage() {
+  const loginForm = document.getElementById("login-form");
+  const registerForm = document.getElementById("register-form");
+  const protectedForm = document.getElementById("protected-demo-form");
+  const message = document.getElementById("login-message");
+  const registerMessage = document.getElementById("register-message");
+  const protectedMessage = document.getElementById("protected-demo-message");
+  const validationMessage = document.getElementById("validation-demo-message");
+  const currentUser = document.getElementById("current-user");
+  const logoutButton = document.getElementById("logout-button");
+  const refreshSessionButton = document.getElementById("refresh-session");
+  const failWithoutSessionButton = document.getElementById("fail-without-session");
+  const validationButton = document.getElementById("validation-demo");
+
+  async function renderAuthState() {
+    try {
+      const csrfToken = await fetchCsrfToken();
+      const csrfInput = document.getElementById("csrf-token");
+      if (csrfInput) {
+        csrfInput.value = csrfToken;
+      }
+      const session = await fetchSession();
+      if (!session.authenticated) {
+        localStorage.removeItem(STORAGE_KEYS.sessionUser);
+        currentUser.textContent = "No active session cookie.";
+        logoutButton.hidden = true;
+        return;
+      }
+
+      localStorage.setItem(STORAGE_KEYS.sessionUser, session.username);
+      currentUser.textContent = `Session active as ${session.username}.`;
+      logoutButton.hidden = false;
+    } catch (error) {
+      currentUser.textContent = "You are not signed in.";
+      logoutButton.hidden = true;
+    }
+  }
+
+  if (registerForm) {
+    registerForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      registerMessage.textContent = "";
+
+      try {
+        const created = await registerAccount(
+          getFormValue(registerForm, "register-username"),
+          getFormValue(registerForm, "register-password"),
+          getFormValue(registerForm, "register-role")
+        );
+        registerMessage.textContent = `${created.message}: ${created.username}`;
+        registerForm.reset();
+      } catch (error) {
+        registerMessage.textContent = `Register failed: ${error.message}`;
+      }
+    });
+  }
+
+  loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    message.textContent = "";
+
+    try {
+      const login = await loginAccount(getFormValue(loginForm, "username"), getFormValue(loginForm, "password"));
+      message.textContent = `${login.message}. JSESSIONID cookie is now stored by the browser.`;
+      loginForm.reset();
+      await renderAuthState();
+    } catch (error) {
+      message.textContent = `Login failed: ${error.message}`;
+    }
+  });
+
+  logoutButton.addEventListener("click", async () => {
+    const result = await logoutAccount();
+    message.textContent = result.message || "Signed out.";
+    await renderAuthState();
+  });
+
+  refreshSessionButton.addEventListener("click", renderAuthState);
+
+  if (failWithoutSessionButton && protectedForm) {
+    failWithoutSessionButton.addEventListener("click", async () => {
+      protectedMessage.textContent = "";
+      try {
+        await logoutAccount();
+        await createProduct(buildDemoProduct(protectedForm));
+        protectedMessage.textContent = "Unexpected success. Clear cookies and try again.";
+      } catch (error) {
+        protectedMessage.textContent = `Protected action failed without session: ${error.message}`;
+      } finally {
+        await renderAuthState();
+      }
+    });
+  }
+
+  if (protectedForm) {
+    protectedForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      protectedMessage.textContent = "";
+
+      try {
+        const product = await createProduct(buildDemoProduct(protectedForm));
+        protectedMessage.textContent = `Protected action succeeded with session. Created product ID ${product.id}: ${product.name}`;
+      } catch (error) {
+        protectedMessage.textContent = `Protected action failed: ${error.message}`;
+      }
+    });
+  }
+
+  if (validationButton) {
+    validationButton.addEventListener("click", async () => {
+      validationMessage.textContent = "";
+      try {
+        await createProduct({
+          name: "Invalid Price Demo",
+          description: "This request intentionally uses a negative price.",
+          price: -100,
+          category: "Bracelets",
+          stockQuantity: 3,
+          imageUrl: "https://via.placeholder.com/200?text=Invalid"
+        });
+        validationMessage.textContent = "Unexpected success. The validation rule did not run.";
+      } catch (error) {
+        validationMessage.textContent = `Validation error returned: ${error.message}`;
+      }
+    });
+  }
+
+  renderAuthState();
+}
+
+function buildDemoProduct(form) {
+  return {
+    name: getFormValue(form, "product-name"),
+    description: getFormValue(form, "product-description"),
+    price: Number(getFormValue(form, "product-price")),
+    category: getFormValue(form, "product-category"),
+    stockQuantity: Number(getFormValue(form, "product-stock")),
+    imageUrl: "https://via.placeholder.com/200?text=Session+Demo"
+  };
+}
+
+function getFormValue(form, name) {
+  return String(form.elements.namedItem(name)?.value || "").trim();
 }
 
 /**
@@ -807,6 +1097,31 @@ function readStorageArray(key) {
   }
 }
 
+function isAuthenticated() {
+  return Boolean(localStorage.getItem(STORAGE_KEYS.sessionUser));
+}
+
+async function requireSessionForPage(messageElement) {
+  try {
+    const session = await fetchSession();
+    if (session.authenticated) {
+      localStorage.setItem(STORAGE_KEYS.sessionUser, session.username);
+      return true;
+    }
+  } catch (error) {
+    console.warn("Session check failed:", error);
+  }
+
+  localStorage.removeItem(STORAGE_KEYS.sessionUser);
+  if (messageElement) {
+    messageElement.innerHTML = 'Please <a href="TASK7.html">sign in</a> before placing an order.';
+  }
+  setTimeout(() => {
+    window.location.href = "TASK7.html";
+  }, 1200);
+  return false;
+}
+
 /**
  * Get image URL for a product
  * Falls back to placeholder SVG if image is not available
@@ -815,7 +1130,33 @@ function readStorageArray(key) {
  * @returns {string} - Image URL
  */
 function getProductImage(product) {
-  return product.image || buildPlaceholderImage(product.name);
+  return product.image || product.imageUrl || buildPlaceholderImage(product.name);
+}
+
+function normalizeProducts(products) {
+  return Array.isArray(products) ? products.map(normalizeProduct) : [];
+}
+
+function normalizeProduct(product) {
+  if (!product) {
+    return null;
+  }
+
+  return {
+    ...product,
+    image: product.image || product.imageUrl || "",
+    category: normalizeCategory(product.category),
+    tagline: product.tagline || product.description || "",
+    badge: product.badge || (product.stockQuantity > 0 ? "In Stock" : "Sold Out")
+  };
+}
+
+function normalizeCategory(category) {
+  const value = String(category || "").trim().toLowerCase();
+  if (value.endsWith("s")) {
+    return value.slice(0, -1);
+  }
+  return value;
 }
 
 /**

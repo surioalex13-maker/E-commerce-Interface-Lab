@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="stylesheet.css">
-  <title>ShopEase - Products</title>
+  <title>ShopEase - Product Details</title>
 </head>
-<body data-page="products">
+<body data-page="details">
   <header>
     <h1>ShopEase</h1>
     <nav aria-label="Main Navigation">
@@ -16,99 +16,47 @@
         <li><a href="TASK4.html">Cart</a></li>
         <li><a href="TASK5.html">Checkout</a></li>
         <li><a href="TASK6.html">Orders</a></li>
+        <li><a href="TASK7.html">Login</a></li>
       </ul>
     </nav>
   </header>
 
-  <main>
-    <aside>
-      <h2>Filters</h2>
-      <form id="filter-form">
-        <fieldset>
-          <legend>Category</legend>
-          <label><input type="checkbox" name="category" value="necklace"> Necklace</label>
-          <label><input type="checkbox" name="category" value="bracelet"> Bracelet</label>
-        </fieldset>
+  <main class="detail-layout">
+    <section class="detail-media" aria-label="Product image">
+      <img id="detail-image" alt="">
+    </section>
 
-        <fieldset>
-          <legend>Price Range</legend>
-          <label><input type="radio" name="price" value="all" checked> All Prices</label>
-          <label><input type="radio" name="price" value="under-7000"> Up to Php7,000</label>
-          <label><input type="radio" name="price" value="over-7000"> Over Php7,000</label>
-        </fieldset>
+    <section class="detail-summary" aria-labelledby="detail-title">
+      <h1 id="detail-title"></h1>
+      <p id="detail-tagline" class="page-intro"></p>
+      <p id="detail-price" class="product-price"></p>
+      <p id="detail-description"></p>
 
-        <label for="search-input">Search</label>
-        <input id="search-input" name="search" type="text" placeholder="Search products">
+      <form id="purchase-form" class="purchase-panel">
+        <label for="quantity">Quantity</label>
+        <input type="number" id="quantity" name="quantity" min="1" value="1" required>
+        <button type="submit">Add to Cart</button>
+        <p id="purchase-message" class="status-message" aria-live="polite"></p>
       </form>
-    </aside>
+    </section>
 
-    <section aria-labelledby="product-grid" class="products-section">
-      <h2 id="product-grid">Available Products</h2>
-      <p class="filter-summary" id="filter-summary" aria-live="polite"></p>
-      <div class="products-grid" id="catalog-grid"></div>
+    <section aria-labelledby="spec-heading">
+      <h2 id="spec-heading">Specifications</h2>
+      <div class="table-responsive">
+        <table>
+          <tbody id="spec-table"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="review-heading">
+      <h2 id="review-heading">Customer Reviews</h2>
+      <div id="review-list"></div>
     </section>
   </main>
 
   <div class="back-button-container">
-    <a href="TASK1.html" role="button" class="back-button">Back</a>
-  </div>
-
-  <script src="app.js" defer></script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="stylesheet.css">
-  <title>ShopEase - Products</title>
-</head>
-<body data-page="products">
-  <header>
-    <h1>ShopEase</h1>
-    <nav aria-label="Main Navigation">
-      <ul>
-        <li><a href="TASK1.html">Home</a></li>
-        <li><a href="TASK2.html">Products</a></li>
-        <li><a href="TASK4.html">Cart</a></li>
-        <li><a href="TASK5.html">Checkout</a></li>
-        <li><a href="TASK6.html">Orders</a></li>
-      </ul>
-    </nav>
-  </header>
-
-  <main>
-    <aside>
-      <h2>Filters</h2>
-      <form id="filter-form">
-        <fieldset>
-          <legend>Category</legend>
-          <label><input type="checkbox" name="category" value="necklace"> Necklace</label>
-          <label><input type="checkbox" name="category" value="bracelet"> Bracelet</label>
-        </fieldset>
-
-        <fieldset>
-          <legend>Price Range</legend>
-          <label><input type="radio" name="price" value="all" checked> All Prices</label>
-          <label><input type="radio" name="price" value="under-7000"> Up to Php7,000</label>
-          <label><input type="radio" name="price" value="over-7000"> Over Php7,000</label>
-        </fieldset>
-
-        <label for="search-input">Search</label>
-        <input id="search-input" name="search" type="text" placeholder="Search products">
-      </form>
-    </aside>
-
-    <section aria-labelledby="product-grid" class="products-section">
-      <h2 id="product-grid">Available Products</h2>
-      <p class="filter-summary" id="filter-summary" aria-live="polite"></p>
-      <div class="products-grid" id="catalog-grid"></div>
-    </section>
-  </main>
-
-  <div class="back-button-container">
-    <a href="TASK1.html" role="button" class="back-button">Back</a>
+    <a href="TASK2.html" role="button" class="back-button">Back</a>
   </div>
 
   <script src="app.js" defer></script>

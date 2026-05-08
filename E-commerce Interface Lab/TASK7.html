@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="stylesheet.css">
+  <title>ShopEase - Security</title>
+</head>
+<body data-page="login">
+  <header>
+    <h1>ShopEase</h1>
+    <nav aria-label="Main Navigation">
+      <ul>
+        <li><a href="TASK1.html">Home</a></li>
+        <li><a href="TASK2.html">Products</a></li>
+        <li><a href="TASK4.html">Cart</a></li>
+        <li><a href="TASK5.html">Checkout</a></li>
+        <li><a href="TASK6.html">Orders</a></li>
+        <li><a href="TASK7.html">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="auth-container">
+    <section class="auth-panel">
+      <h1>Session Login</h1>
+      <p class="page-intro" id="current-user" aria-live="polite"></p>
+
+      <form id="login-form">
+        <input type="hidden" id="csrf-token" name="_csrf">
+
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" autocomplete="username" required>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required>
+
+        <div class="product-actions">
+          <button type="submit">Sign In</button>
+          <button type="button" class="danger-button" id="logout-button" hidden>Sign Out</button>
+          <button type="button" id="refresh-session">Refresh Session</button>
+        </div>
+        <p class="status-message" id="login-message" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="auth-panel">
+      <h2>Create Account</h2>
+      <form id="register-form">
+        <label for="register-username">Username</label>
+        <input type="text" id="register-username" name="register-username" minlength="8" maxlength="20" required>
+
+        <label for="register-password">Password</label>
+        <input type="password" id="register-password" name="register-password" minlength="8" required>
+
+        <label for="register-role">Role</label>
+        <select id="register-role" name="register-role" required>
+          <option value="CUSTOMER">Customer</option>
+          <option value="ADMIN">Admin</option>
+        </select>
+
+        <button type="submit">Register</button>
+        <p class="status-message" id="register-message" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="auth-panel">
+      <h2>Protected Product Action</h2>
+      <form id="protected-demo-form">
+        <label for="product-name">Product Name</label>
+        <input type="text" id="product-name" name="product-name" value="Session Demo Bracelet" required>
+
+        <label for="product-description">Description</label>
+        <input type="text" id="product-description" name="product-description" value="Created through a protected endpoint." required>
+
+        <label for="product-price">Price</label>
+        <input type="number" id="product-price" name="product-price" min="1" step="0.01" value="2500" required>
+
+        <label for="product-category">Category</label>
+        <input type="text" id="product-category" name="product-category" value="Bracelets" required>
+
+        <label for="product-stock">Stock</label>
+        <input type="number" id="product-stock" name="product-stock" min="1" value="5" required>
+
+        <div class="product-actions">
+          <button type="submit">Create Protected Product</button>
+          <button type="button" class="danger-button" id="fail-without-session">Try Without Session</button>
+        </div>
+        <p class="status-message" id="protected-demo-message" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="auth-panel">
+      <h2>Validation</h2>
+      <p class="page-intro">Submit an invalid product price to verify the API returns a field-level validation error.</p>
+      <button type="button" id="validation-demo">Send Invalid Price</button>
+      <p class="status-message" id="validation-demo-message" aria-live="polite"></p>
+    </section>
+
+    <aside>
+      <h2>Accounts</h2>
+      <p><strong>Customer:</strong> customer / customer123</p>
+      <p><strong>Admin:</strong> admin / admin123</p>
+    </aside>
+  </main>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

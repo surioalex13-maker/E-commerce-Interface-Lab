@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="stylesheet.css">
+  <title>Bracelet Details - ShopEase</title>
+</head>
+<body>
+<header>
+  <h1>Bracelet Details</h1>
+  <nav aria-label="Main Navigation">
+    <ul>
+      <li><a href="TASK1.html">Home</a></li>
+      <li><a href="TASK2.html">Products</a></li>
+    </ul>
+  </nav>
+  <p>Silvery Plated Bracelet - Elegant and Charming, Perfect for Casual Attire and Special Occasions</p>
+</header>
+</body>
+</html>
