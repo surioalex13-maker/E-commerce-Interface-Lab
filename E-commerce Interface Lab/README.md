@@ -462,11 +462,3 @@ fetchApi("/products")
 2. Backend running
 3. Network tab shows POST request
 4. Check console for error messages
-
-## Version History
-
-- **1.0.0** (Current) - Fetch API integration with backend database
-
-## License
-
-This project is part of Laboratory 8: Database Integration and Consuming RESTful Web Services with Fetch API.
