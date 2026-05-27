@@ -6,7 +6,7 @@ from urllib.parse import parse_qs, urlparse
 
 HOST = "localhost"
 PORT = 8080
-ALLOWED_ORIGINS = {"http://localhost:5500", "http://127.0.0.1:5500"}
+ALLOWED_ORIGINS = {"http://localhost:5500", "http://127.0.0.1:5500", "null"}
 
 users = {}
 sessions = {}
@@ -33,8 +33,8 @@ products = [
 ]
 orders = []
 users.update({
-    "customer": {"password": "customer123", "role": "CUSTOMER"},
-    "admin": {"password": "admin123", "role": "ADMIN"},
+    "customer@shopease.com": {"password": "password123", "role": "USER", "fullName": "John Customer"},
+    "admin@shopease.com": {"password": "admin123", "role": "ADMIN", "fullName": "Admin User"},
 })
 
 
@@ -43,7 +43,7 @@ class Handler(BaseHTTPRequestHandler):
         origin = self.headers.get("Origin")
         self.send_header("Access-Control-Allow-Origin", origin if origin in ALLOWED_ORIGINS else "http://localhost:5500")
         self.send_header("Access-Control-Allow-Credentials", "true")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-CSRF-TOKEN")
+        self.send_header("Access-Control-Allow-Headers", "Authorization, Content-Type, X-CSRF-TOKEN")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         super().end_headers()
 
@@ -53,16 +53,33 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = urlparse(self.path).path
-        if path == "/api/v1/products":
+        if path == "/api/products":
             return self.json(200, products)
-        if path == "/api/v1/products/discounted":
+        if path == "/api/products/discounted":
             discounted = [{**item, "originalPrice": round(item["price"] * 1.25, 2)} for item in products]
             return self.json(200, discounted)
-        if path == "/api/v1/auth/me":
+        if path == "/api/products/search":
+            term = parse_qs(urlparse(self.path).query).get("term", [""])[0].lower()
+            matches = [item for item in products if term in item["name"].lower() or term in item.get("description", "").lower()]
+            return self.json(200, matches)
+        if path.startswith("/api/products/category/"):
+            category = path.rsplit("/", 1)[-1].lower()
+            matches = [item for item in products if str(item.get("category", "")).lower().rstrip("s") == category.rstrip("s")]
+            return self.json(200, matches)
+        if path.startswith("/api/products/"):
+            try:
+                product_id = int(path.rsplit("/", 1)[-1])
+            except ValueError:
+                return self.json(404, {"message": "Not found"})
+            product = next((item for item in products if item["id"] == product_id), None)
+            return self.json(200, product) if product else self.json(404, {"message": "Product not found"})
+        if path == "/api/auth/me":
             username = self.current_user()
-            role = users.get(username, {}).get("role") if username else None
-            return self.json(200, {"authenticated": bool(username), "username": username, "role": role})
-        if path == "/api/v1/auth/csrf":
+            user = users.get(username, {})
+            if not username:
+                return self.json(401, {"message": "Not authenticated"})
+            return self.json(200, {"email": username, "fullName": user.get("fullName", username), "role": user.get("role")})
+        if path == "/api/auth/csrf":
             token = self.csrf_token()
             return self.json(200, {"token": token, "parameterName": "_csrf", "headerName": "X-CSRF-TOKEN"})
         if path == "/login":
@@ -72,7 +89,7 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(f'<input type="hidden" name="_csrf" value="{token}">'.encode())
             return
-        if path == "/api/v1/orders":
+        if path == "/api/orders":
             if not self.current_user():
                 return self.json(401, {"message": "Authentication required. Please log in first."})
             return self.json(200, orders)
@@ -84,41 +101,41 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         body = self.body()
 
-        if path == "/api/v1/auth/register":
-            username = str(body.get("username", "")).strip()
+        if path == "/api/auth/register":
+            username = str(body.get("email", "")).strip()
             password = str(body.get("password", ""))
-            role = str(body.get("role", "CUSTOMER")).strip().upper()
+            full_name = str(body.get("fullName", username)).strip()
             errors = []
-            if len(username) < 8 or len(username) > 20:
-                errors.append("Field 'username' must be 8 to 20 characters")
+            if "@" not in username:
+                errors.append("Field 'email' must be a valid email")
             if len(password) < 8:
                 errors.append("Field 'password' must be at least 8 characters")
-            if role not in ("CUSTOMER", "ADMIN"):
-                errors.append("Field 'role' must be CUSTOMER or ADMIN")
             if errors:
                 return self.json(400, {"timestamp": self.timestamp(), "errors": errors})
-            users[username] = {"password": password, "role": role}
-            return self.json(200, {"message": "Account created successfully", "username": username, "role": role})
+            users[username] = {"password": password, "role": "USER", "fullName": full_name}
+            token = self.create_session(username)
+            return self.json(201, {"message": "Account created successfully", "email": username, "fullName": full_name, "token": token})
 
-        if path in ("/api/v1/auth/login", "/login"):
+        if path in ("/api/auth/login", "/login"):
             username = str(body.get("username", "")).strip()
             password = str(body.get("password", ""))
-            if not self.valid_csrf(body):
-                return self.json(403, {"message": "Invalid or missing CSRF token"})
             if users.get(username, {}).get("password") != password:
                 return self.json(401, {"message": "Invalid username or password"})
-            session_id = f"S{int(time.time() * 1000)}"
-            sessions[session_id] = username
+            session_id = self.create_session(username)
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Set-Cookie", f"JSESSIONID={session_id}; Path=/; HttpOnly; SameSite=Lax")
             self.end_headers()
-            self.wfile.write(json.dumps({"message": "Login successful", "username": username, "role": users[username]["role"]}).encode())
+            self.wfile.write(json.dumps({
+                "message": "Login successful",
+                "email": username,
+                "fullName": users[username].get("fullName", username),
+                "role": users[username]["role"],
+                "token": session_id
+            }).encode())
             return
 
-        if path in ("/api/v1/auth/logout", "/logout"):
-            if not self.valid_csrf(body):
-                return self.json(403, {"message": "Invalid or missing CSRF token"})
+        if path in ("/api/auth/logout", "/logout"):
             session_id = self.session_id()
             if session_id:
                 sessions.pop(session_id, None)
@@ -129,30 +146,29 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"message": "Signed out."}).encode())
             return
 
-        if path == "/api/v1/products":
+        if path == "/api/products":
             if not self.current_user():
                 return self.json(401, {"message": "Authentication required. Please log in first."})
             if users.get(self.current_user(), {}).get("role") != "ADMIN":
                 return self.json(403, {"message": "ADMIN role is required for product changes"})
-            if not self.valid_csrf(body):
-                return self.json(403, {"message": "Invalid or missing CSRF token"})
             errors = self.validate_product(body)
             if errors:
                 return self.json(400, {"timestamp": self.timestamp(), "errors": errors})
             price = float(body.get("price") or 0)
-            product = {**body, "id": len(products) + 1, "price": price}
+            category = body.get("category", "")
+            if isinstance(category, dict):
+                category = category.get("name", "")
+            product = {**body, "id": len(products) + 1, "price": price, "category": category, "stockQuantity": body.get("stock", 0)}
             products.append(product)
             return self.json(201, product)
 
-        if path == "/api/v1/orders":
+        if path == "/api/orders":
             if not self.current_user():
                 return self.json(401, {"message": "Authentication required. Please log in first."})
-            if not self.valid_csrf(body):
-                return self.json(403, {"message": "Invalid or missing CSRF token"})
             errors = self.validate_order(body)
             if errors:
                 return self.json(400, {"timestamp": self.timestamp(), "errors": errors})
-            order = {**body, "id": f"ORD-{len(orders) + 1}", "username": self.current_user()}
+            order = {**body, "id": f"ORD-{len(orders) + 1}", "customerEmail": self.current_user()}
             orders.insert(0, order)
             return self.json(201, order)
 
@@ -169,12 +185,20 @@ class Handler(BaseHTTPRequestHandler):
         return json.loads(raw or "{}")
 
     def session_id(self):
+        auth = self.headers.get("Authorization", "")
+        if auth.startswith("Bearer "):
+            return auth.removeprefix("Bearer ").strip()
         cookie = self.headers.get("Cookie", "")
         for part in cookie.split(";"):
             name, _, value = part.strip().partition("=")
             if name == "JSESSIONID":
                 return value
         return None
+
+    def create_session(self, username):
+        session_id = f"S{int(time.time() * 1000)}"
+        sessions[session_id] = username
+        return session_id
 
     def current_user(self):
         return sessions.get(self.session_id())
@@ -203,10 +227,10 @@ class Handler(BaseHTTPRequestHandler):
         except (TypeError, ValueError):
             errors.append("Field 'price' must be a positive number")
         try:
-            if int(body.get("stockQuantity") or 0) <= 0:
-                errors.append("Field 'stockQuantity' must be positive")
+            if int(body.get("stockQuantity") or body.get("stock") or 0) <= 0:
+                errors.append("Field 'stock' must be positive")
         except (TypeError, ValueError):
-            errors.append("Field 'stockQuantity' must be positive")
+            errors.append("Field 'stock' must be positive")
         return errors
 
     def validate_order(self, body):

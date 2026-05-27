@@ -2,13 +2,16 @@ package com.shopease.service;
 
 import com.shopease.entity.Order;
 import com.shopease.entity.OrderItem;
+import com.shopease.entity.Product;
 import com.shopease.exception.ResourceNotFoundException;
 import com.shopease.repository.OrderRepository;
 import com.shopease.repository.OrderItemRepository;
+import com.shopease.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -23,6 +26,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
+    private final ProductRepository productRepository;
 
     /**
      * Retrieve all orders.
@@ -86,7 +90,48 @@ public class OrderService {
      * @return the created order
      */
     public Order createOrder(Order order) {
+        validateOrder(order);
+
+        if (order.getStatus() == null) {
+            order.setStatus(Order.OrderStatus.PENDING);
+        }
+
+        if (order.getOrderItems() != null) {
+            for (OrderItem item : order.getOrderItems()) {
+                item.setOrder(order);
+
+                Long productId = item.getProductId();
+                if (productId == null && item.getProduct() != null) {
+                    productId = item.getProduct().getId();
+                }
+
+                if (productId == null) {
+                    throw new ResourceNotFoundException("Order item productId is required");
+                }
+
+                Long lookupProductId = productId;
+                Product product = productRepository.findById(lookupProductId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + lookupProductId));
+                item.setProduct(product);
+            }
+        }
+
         return orderRepository.save(order);
+    }
+
+    private void validateOrder(Order order) {
+        if (order.getCustomerEmail() == null || !order.getCustomerEmail().contains("@")) {
+            throw new IllegalArgumentException("A valid customer email is required");
+        }
+        if (order.getDeliveryAddress() == null || order.getDeliveryAddress().isBlank()) {
+            throw new IllegalArgumentException("Delivery address is required");
+        }
+        if (order.getTotalAmount() == null || order.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Order total must be greater than zero");
+        }
+        if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
+            throw new IllegalArgumentException("Order must contain at least one item");
+        }
     }
 
     /**

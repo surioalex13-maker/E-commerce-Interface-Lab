@@ -1,5 +1,6 @@
 package com.shopease.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -44,5 +45,6 @@ public class Category {
      * Using FetchType.LAZY for performance optimization.
      */
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private java.util.List<Product> products;
 }

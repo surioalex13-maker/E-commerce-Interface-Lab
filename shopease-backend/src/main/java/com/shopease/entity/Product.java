@@ -1,5 +1,6 @@
 package com.shopease.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -95,6 +96,7 @@ public class Product {
      * One product can appear in many order items.
      */
     @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<OrderItem> orderItems;
 
     /**

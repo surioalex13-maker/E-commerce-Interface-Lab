@@ -4,7 +4,7 @@
  * Base API URL points to the Spring Boot backend running on localhost:8080
  */
 
-const API_BASE_URL = "http://localhost:8080/api/v1";
+const API_BASE_URL = "http://localhost:8080/api";
 const STORAGE_KEYS = {
   cart: "shopease-cart",
   orders: "shopease-orders",
@@ -67,16 +67,19 @@ async function fetchApi(endpoint, options = {}) {
   try {
     const url = `${API_BASE_URL}${endpoint}`;
     const method = (options.method || "GET").toUpperCase();
-    const csrfHeaders = method === "GET" || method === "HEAD" || method === "OPTIONS"
-      ? {}
-      : await getCsrfHeaders();
+    const token = localStorage.getItem("jwt_token");
+    const headers = {
+      "Content-Type": "application/json",
+      ...options.headers
+    };
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     const response = await fetch(url, {
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...csrfHeaders,
-        ...options.headers
-      },
+      headers,
       ...options
     });
 
@@ -98,6 +101,7 @@ async function fetchApi(endpoint, options = {}) {
       } else if (response.status === 401) {
         console.error("Authentication required:", errorMessage);
         localStorage.removeItem(STORAGE_KEYS.sessionUser);
+        localStorage.removeItem("jwt_token");
         throw new Error("Authentication required. Please log in first.");
       } else if (response.status === 403) {
         console.error("Access denied:", errorMessage);
@@ -209,7 +213,7 @@ async function fetchDiscountedProducts() {
  */
 async function searchProducts(searchTerm) {
   try {
-    return normalizeProducts(await fetchApi(`/products/filter?filterType=name&filterValue=${encodeURIComponent(searchTerm)}`));
+    return normalizeProducts(await fetchApi(`/products/search?term=${encodeURIComponent(searchTerm)}`));
   } catch (error) {
     console.error(`Failed to search for products with term "${searchTerm}":`, error);
     return [];
@@ -237,24 +241,28 @@ async function createOrder(orderData) {
   }
 }
 
-async function registerAccount(username, password, role = "CUSTOMER") {
-  return await fetchApi("/auth/register", {
+async function registerAccount(email, password, fullName = "") {
+  const data = await fetchApi("/auth/register", {
     method: "POST",
-    body: JSON.stringify({ username, password, role })
+    body: JSON.stringify({ email, password, fullName: fullName || email })
   });
+
+  if (data.token) {
+    localStorage.setItem("jwt_token", data.token);
+    localStorage.setItem(STORAGE_KEYS.sessionUser, JSON.stringify(data));
+  }
+  return data;
 }
 
 async function loginAccount(username, password) {
-  const csrfToken = await fetchCsrfToken();
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: "POST",
     credentials: "include",
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Accept: "application/json",
-      ...(csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {})
+      "Content-Type": "application/json",
+      Accept: "application/json"
     },
-    body: new URLSearchParams({ username, password, _csrf: csrfToken })
+    body: JSON.stringify({ username, password })
   });
 
   const data = await response.json().catch(() => ({}));
@@ -262,24 +270,28 @@ async function loginAccount(username, password) {
     throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
   }
 
-  localStorage.setItem(STORAGE_KEYS.sessionUser, data.username || username);
-  await fetchCsrfToken();
+  // Store JWT token
+  if (data.token) {
+    localStorage.setItem("jwt_token", data.token);
+  }
+  localStorage.setItem(STORAGE_KEYS.sessionUser, JSON.stringify(data));
   return data;
 }
 
 async function logoutAccount() {
-  const csrfHeaders = await getCsrfHeaders();
+  const token = localStorage.getItem("jwt_token");
   const response = await fetch(`${API_BASE_URL}/auth/logout`, {
     method: "POST",
     credentials: "include",
     headers: {
+      "Content-Type": "application/json",
       Accept: "application/json",
-      ...csrfHeaders
+      ...(token ? { "Authorization": `Bearer ${token}` } : {})
     }
   });
 
   localStorage.removeItem(STORAGE_KEYS.sessionUser);
-  localStorage.removeItem(STORAGE_KEYS.csrfToken);
+  localStorage.removeItem("jwt_token");
   return await response.json().catch(() => ({ message: "Logout complete" }));
 }
 
@@ -745,15 +757,16 @@ function initLoginPage() {
         csrfInput.value = csrfToken;
       }
       const session = await fetchSession();
-      if (!session.authenticated) {
+      if (!session.email && !session.authenticated) {
         localStorage.removeItem(STORAGE_KEYS.sessionUser);
-        currentUser.textContent = "No active session cookie.";
+        currentUser.textContent = "No active account.";
         logoutButton.hidden = true;
         return;
       }
 
-      localStorage.setItem(STORAGE_KEYS.sessionUser, session.username);
-      currentUser.textContent = `Session active as ${session.username}.`;
+      const displayName = session.fullName || session.email || session.username;
+      localStorage.setItem(STORAGE_KEYS.sessionUser, JSON.stringify(session));
+      currentUser.textContent = `Signed in as ${displayName}.`;
       logoutButton.hidden = false;
     } catch (error) {
       currentUser.textContent = "You are not signed in.";
@@ -768,12 +781,13 @@ function initLoginPage() {
 
       try {
         const created = await registerAccount(
-          getFormValue(registerForm, "register-username"),
+          getFormValue(registerForm, "register-email"),
           getFormValue(registerForm, "register-password"),
-          getFormValue(registerForm, "register-role")
+          getFormValue(registerForm, "register-fullname")
         );
-        registerMessage.textContent = `${created.message}: ${created.username}`;
+        registerMessage.textContent = `${created.message || "Account created"}: ${created.email}`;
         registerForm.reset();
+        await renderAuthState();
       } catch (error) {
         registerMessage.textContent = `Register failed: ${error.message}`;
       }
@@ -786,7 +800,7 @@ function initLoginPage() {
 
     try {
       const login = await loginAccount(getFormValue(loginForm, "username"), getFormValue(loginForm, "password"));
-      message.textContent = `${login.message}. JSESSIONID cookie is now stored by the browser.`;
+      message.textContent = `Welcome back, ${login.fullName || login.email}.`;
       loginForm.reset();
       await renderAuthState();
     } catch (error) {
@@ -808,7 +822,7 @@ function initLoginPage() {
       try {
         await logoutAccount();
         await createProduct(buildDemoProduct(protectedForm));
-        protectedMessage.textContent = "Unexpected success. Clear cookies and try again.";
+        protectedMessage.textContent = "Unexpected success. Sign out and try again.";
       } catch (error) {
         protectedMessage.textContent = `Protected action failed without session: ${error.message}`;
       } finally {
@@ -839,9 +853,9 @@ function initLoginPage() {
           name: "Invalid Price Demo",
           description: "This request intentionally uses a negative price.",
           price: -100,
-          category: "Bracelets",
-          stockQuantity: 3,
-          imageUrl: "https://via.placeholder.com/200?text=Invalid"
+          category: { name: "Bracelets" },
+          stock: 3,
+          image: "https://via.placeholder.com/200?text=Invalid"
         });
         validationMessage.textContent = "Unexpected success. The validation rule did not run.";
       } catch (error) {
@@ -854,13 +868,14 @@ function initLoginPage() {
 }
 
 function buildDemoProduct(form) {
+  const categoryName = getFormValue(form, "product-category");
   return {
     name: getFormValue(form, "product-name"),
     description: getFormValue(form, "product-description"),
     price: Number(getFormValue(form, "product-price")),
-    category: getFormValue(form, "product-category"),
-    stockQuantity: Number(getFormValue(form, "product-stock")),
-    imageUrl: "https://via.placeholder.com/200?text=Session+Demo"
+    category: { name: categoryName },
+    stock: Number(getFormValue(form, "product-stock")),
+    image: "https://via.placeholder.com/200?text=Admin+Product"
   };
 }
 
@@ -1098,14 +1113,14 @@ function readStorageArray(key) {
 }
 
 function isAuthenticated() {
-  return Boolean(localStorage.getItem(STORAGE_KEYS.sessionUser));
+  return Boolean(localStorage.getItem("jwt_token") || localStorage.getItem(STORAGE_KEYS.sessionUser));
 }
 
 async function requireSessionForPage(messageElement) {
   try {
     const session = await fetchSession();
-    if (session.authenticated) {
-      localStorage.setItem(STORAGE_KEYS.sessionUser, session.username);
+    if (session.email || session.authenticated) {
+      localStorage.setItem(STORAGE_KEYS.sessionUser, JSON.stringify(session));
       return true;
     }
   } catch (error) {
@@ -1142,17 +1157,20 @@ function normalizeProduct(product) {
     return null;
   }
 
+  const stock = Number(product.stockQuantity ?? product.stock ?? 0);
   return {
     ...product,
     image: product.image || product.imageUrl || "",
     category: normalizeCategory(product.category),
     tagline: product.tagline || product.description || "",
-    badge: product.badge || (product.stockQuantity > 0 ? "In Stock" : "Sold Out")
+    stockQuantity: stock,
+    badge: product.badge || (stock > 0 ? "In Stock" : "Sold Out")
   };
 }
 
 function normalizeCategory(category) {
-  const value = String(category || "").trim().toLowerCase();
+  const rawValue = typeof category === "object" && category !== null ? category.name : category;
+  const value = String(rawValue || "").trim().toLowerCase();
   if (value.endsWith("s")) {
     return value.slice(0, -1);
   }

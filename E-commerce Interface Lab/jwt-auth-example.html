@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWT Authentication Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button.danger {
+            background: #dc3545;
+        }
+        button.danger:hover {
+            background: #c82333;
+        }
+        button.success {
+            background: #28a745;
+        }
+        button.success:hover {
+            background: #218838;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        .token-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+            display: none;
+        }
+        .token-display.active {
+            display: block;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .section {
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+            margin-top: 30px;
+        }
+        .info {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🔐 JWT Authentication Example</h1>
+
+    <!-- Authentication Section -->
+    <div>
+        <h2>Authentication</h2>
+
+        <div class="info">
+            <strong>Test Credentials:</strong><br>
+            User: user@example.com / password123<br>
+            Admin: admin@example.com / admin123
+        </div>
+
+        <!-- Login Form -->
+        <div class="form-group">
+            <h3>Login</h3>
+            <label for="loginUsername">Username:</label>
+            <input type="text" id="loginUsername" value="user@example.com">
+
+            <label for="loginPassword">Password:</label>
+            <input type="password" id="loginPassword" value="password123">
+
+            <button class="success" onclick="login()">Login</button>
+        </div>
+
+        <!-- Register Form -->
+        <div class="form-group">
+            <h3>Register New User</h3>
+            <label for="registerUsername">Username:</label>
+            <input type="text" id="registerUsername" placeholder="Enter new username">
+
+            <label for="registerPassword">Password:</label>
+            <input type="password" id="registerPassword" placeholder="Enter password">
+
+            <button class="success" onclick="register()">Register</button>
+        </div>
+
+        <!-- Token Display -->
+        <div id="tokenDisplay" class="token-display">
+            <strong>Current JWT Token:</strong><br>
+            <div id="tokenContent"></div>
+            <button class="danger" onclick="copyToken()" style="margin-top: 10px;">Copy Token</button>
+            <button class="danger" onclick="logout()" style="margin-top: 10px;">Logout</button>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="authStatus" class="status"></div>
+    </div>
+
+    <!-- Protected Resources Section -->
+    <div class="section">
+        <h2>Protected Resources</h2>
+
+        <div class="info">
+            These endpoints require a valid JWT token in the Authorization header.
+        </div>
+
+        <div class="form-group">
+            <h3>Fetch Products</h3>
+            <p>Retrieve all products from the protected API</p>
+            <button onclick="fetchProducts()">Get Products</button>
+        </div>
+
+        <div class="form-group">
+            <h3>Fetch Categories</h3>
+            <p>Retrieve all categories from the protected API</p>
+            <button onclick="fetchCategories()">Get Categories</button>
+        </div>
+
+        <div id="resourceStatus" class="status"></div>
+        <div id="resourceData" style="background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 15px; display: none;">
+            <strong>Response Data:</strong>
+            <pre id="responseContent" style="margin: 10px 0; background: white; padding: 10px; border-radius: 4px; overflow-x: auto;"></pre>
+        </div>
+    </div>
+
+    <!-- Debug Section -->
+    <div class="section">
+        <h2>Debug Information</h2>
+        <div id="debugInfo" style="background: #f8f9fa; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 12px;">
+            <p><strong>Status:</strong> <span id="debugStatus">Not logged in</span></p>
+            <p><strong>Token Expiration:</strong> <span id="debugExpiration">N/A</span></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE_URL = 'http://localhost:8080/api';
+
+    // ============================================================
+    // 1. LOGIN - Get JWT Token
+    // ============================================================
+    async function login() {
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+
+        if (!username || !password) {
+            showAuthStatus('Please enter both username and password', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Login failed');
+            }
+
+            const data = await response.json();
+            const token = data.token;
+
+            // Store token in localStorage
+            localStorage.setItem('jwt_token', token);
+
+            showAuthStatus(`Successfully logged in as ${username}!`, 'success');
+            displayToken(token);
+            updateDebugInfo(token);
+
+        } catch (error) {
+            showAuthStatus(`Login failed: ${error.message}`, 'error');
+        }
+    }
+
+    // ============================================================
+    // 2. REGISTER - Create New User
+    // ============================================================
+    async function register() {
+        const username = document.getElementById('registerUsername').value;
+        const password = document.getElementById('registerPassword').value;
+
+        if (!username || !password) {
+            showAuthStatus('Please enter both username and password', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Registration failed');
+            }
+
+            const data = await response.json();
+            const token = data.token;
+
+            // Store token in localStorage
+            localStorage.setItem('jwt_token', token);
+
+            showAuthStatus(`Successfully registered as ${username}!`, 'success');
+            displayToken(token);
+            updateDebugInfo(token);
+
+            // Clear registration form
+            document.getElementById('registerUsername').value = '';
+            document.getElementById('registerPassword').value = '';
+
+        } catch (error) {
+            showAuthStatus(`Registration failed: ${error.message}`, 'error');
+        }
+    }
+
+    // ============================================================
+    // 3. FETCH PROTECTED RESOURCE
+    // ============================================================
+    async function fetchProtectedData(endpoint, displayName) {
+        const token = localStorage.getItem('jwt_token');
+
+        if (!token) {
+            showResourceStatus(`No token found. Please log in first.`, 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` // Crucial: Bearer + space + token
+                }
+            });
+
+            if (response.status === 401) {
+                showResourceStatus('Unauthorized: Token expired or invalid. Please log in again.', 'error');
+                logout();
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error(`Request failed with status ${response.status}`);
+            }
+
+            const data = await response.json();
+            showResourceStatus(`Successfully fetched ${displayName}!`, 'success');
+            displayResourceData(data);
+
+        } catch (error) {
+            showResourceStatus(`Failed to fetch ${displayName}: ${error.message}`, 'error');
+        }
+    }
+
+    // ============================================================
+    // 4. API ENDPOINT CALLS
+    // ============================================================
+    function fetchProducts() {
+        fetchProtectedData('/products', 'products');
+    }
+
+    function fetchCategories() {
+        fetchProtectedData('/categories', 'categories');
+    }
+
+    // ============================================================
+    // 5. UI HELPER FUNCTIONS
+    // ============================================================
+    function showAuthStatus(message, type) {
+        const statusDiv = document.getElementById('authStatus');
+        statusDiv.textContent = message;
+        statusDiv.className = `status ${type}`;
+    }
+
+    function showResourceStatus(message, type) {
+        const statusDiv = document.getElementById('resourceStatus');
+        statusDiv.textContent = message;
+        statusDiv.className = `status ${type}`;
+    }
+
+    function displayToken(token) {
+        const display = document.getElementById('tokenDisplay');
+        const content = document.getElementById('tokenContent');
+        content.textContent = token;
+        display.classList.add('active');
+    }
+
+    function displayResourceData(data) {
+        const dataDiv = document.getElementById('resourceData');
+        const content = document.getElementById('responseContent');
+        content.textContent = JSON.stringify(data, null, 2);
+        dataDiv.style.display = 'block';
+    }
+
+    function copyToken() {
+        const token = localStorage.getItem('jwt_token');
+        if (token) {
+            navigator.clipboard.writeText(token).then(() => {
+                alert('Token copied to clipboard!');
+            });
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('jwt_token');
+        document.getElementById('tokenDisplay').classList.remove('active');
+        showAuthStatus('Logged out successfully', 'success');
+        document.getElementById('resourceData').style.display = 'none';
+        updateDebugInfo(null);
+    }
+
+    // ============================================================
+    // 6. DEBUG FUNCTIONS
+    // ============================================================
+    function updateDebugInfo(token) {
+        const statusSpan = document.getElementById('debugStatus');
+        const expirationSpan = document.getElementById('debugExpiration');
+
+        if (!token) {
+            statusSpan.textContent = 'Not logged in';
+            expirationSpan.textContent = 'N/A';
+            return;
+        }
+
+        statusSpan.textContent = 'Logged in';
+
+        // Decode JWT to get expiration (JWT has 3 parts separated by dots)
+        try {
+            const parts = token.split('.');
+            if (parts.length !== 3) {
+                expirationSpan.textContent = 'Invalid token format';
+                return;
+            }
+
+            // Decode the payload (second part)
+            const payload = JSON.parse(atob(parts[1]));
+            const expirationDate = new Date(payload.exp * 1000);
+            expirationSpan.textContent = expirationDate.toString();
+        } catch (error) {
+            expirationSpan.textContent = 'Could not decode token';
+        }
+    }
+
+    // ============================================================
+    // 7. INITIALIZATION
+    // ============================================================
+    // Check if user is already logged in when page loads
+    window.addEventListener('load', () => {
+        const token = localStorage.getItem('jwt_token');
+        if (token) {
+            displayToken(token);
+            updateDebugInfo(token);
+        }
+    });
+</script>
+</body>
+</html>

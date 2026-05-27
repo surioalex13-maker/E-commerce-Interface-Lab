@@ -2,6 +2,7 @@ package com.shopease.service;
 
 import com.shopease.entity.Product;
 import com.shopease.exception.ResourceNotFoundException;
+import com.shopease.repository.CategoryRepository;
 import com.shopease.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
 
     /**
      * Retrieve all products.
@@ -116,6 +118,8 @@ public class ProductService {
      * @return the created product
      */
     public Product createProduct(Product product) {
+        validateProduct(product);
+        resolveCategory(product);
         return productRepository.save(product);
     }
 
@@ -129,6 +133,7 @@ public class ProductService {
      */
     public Product updateProduct(Long id, Product product) {
         Product existing = getProductById(id);
+        validateProduct(product);
         existing.setName(product.getName());
         existing.setDescription(product.getDescription());
         existing.setTagline(product.getTagline());
@@ -140,6 +145,7 @@ public class ProductService {
         existing.setReviews(product.getReviews());
         existing.setStock(product.getStock());
         if (product.getCategory() != null) {
+            resolveCategory(product);
             existing.setCategory(product.getCategory());
         }
         return productRepository.save(existing);
@@ -156,5 +162,43 @@ public class ProductService {
             throw new ResourceNotFoundException("Product not found with id: " + id);
         }
         productRepository.deleteById(id);
+    }
+
+    private void resolveCategory(Product product) {
+        if (product.getCategory() == null) {
+            throw new ResourceNotFoundException("Product category is required");
+        }
+
+        if (product.getCategory().getId() != null) {
+            product.setCategory(categoryRepository.findById(product.getCategory().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + product.getCategory().getId())));
+            return;
+        }
+
+        String categoryName = product.getCategory().getName();
+        if (categoryName == null || categoryName.isBlank()) {
+            throw new ResourceNotFoundException("Product category name is required");
+        }
+
+        product.setCategory(categoryRepository.findByName(categoryName)
+                .orElseGet(() -> categoryRepository.save(com.shopease.entity.Category.builder()
+                        .name(categoryName)
+                        .description(categoryName + " products")
+                        .build())));
+    }
+
+    private void validateProduct(Product product) {
+        if (product.getName() == null || product.getName().isBlank()) {
+            throw new IllegalArgumentException("Product name is required");
+        }
+        if (product.getDescription() == null || product.getDescription().isBlank()) {
+            throw new IllegalArgumentException("Product description is required");
+        }
+        if (product.getPrice() == null || product.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Product price must be greater than zero");
+        }
+        if (product.getStock() == null || product.getStock() < 0) {
+            throw new IllegalArgumentException("Product stock cannot be negative");
+        }
     }
 }

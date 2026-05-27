@@ -23,14 +23,14 @@
 
   <main class="auth-container">
     <section class="auth-panel">
-      <h1>Session Login</h1>
+      <h1>Customer Login</h1>
       <p class="page-intro" id="current-user" aria-live="polite"></p>
 
       <form id="login-form">
         <input type="hidden" id="csrf-token" name="_csrf">
 
-        <label for="username">Username</label>
-        <input type="text" id="username" name="username" autocomplete="username" required>
+        <label for="username">Email</label>
+        <input type="email" id="username" name="username" autocomplete="username" required>
 
         <label for="password">Password</label>
         <input type="password" id="password" name="password" autocomplete="current-password" required>
@@ -38,7 +38,7 @@
         <div class="product-actions">
           <button type="submit">Sign In</button>
           <button type="button" class="danger-button" id="logout-button" hidden>Sign Out</button>
-          <button type="button" id="refresh-session">Refresh Session</button>
+          <button type="button" id="refresh-session">Refresh Account</button>
         </div>
         <p class="status-message" id="login-message" aria-live="polite"></p>
       </form>
@@ -47,17 +47,14 @@
     <section class="auth-panel">
       <h2>Create Account</h2>
       <form id="register-form">
-        <label for="register-username">Username</label>
-        <input type="text" id="register-username" name="register-username" minlength="8" maxlength="20" required>
+        <label for="register-email">Email</label>
+        <input type="email" id="register-email" name="register-email" autocomplete="email" required>
+
+        <label for="register-fullname">Full Name</label>
+        <input type="text" id="register-fullname" name="register-fullname" autocomplete="name" required>
 
         <label for="register-password">Password</label>
         <input type="password" id="register-password" name="register-password" minlength="8" required>
-
-        <label for="register-role">Role</label>
-        <select id="register-role" name="register-role" required>
-          <option value="CUSTOMER">Customer</option>
-          <option value="ADMIN">Admin</option>
-        </select>
 
         <button type="submit">Register</button>
         <p class="status-message" id="register-message" aria-live="polite"></p>
@@ -65,7 +62,7 @@
     </section>
 
     <section class="auth-panel">
-      <h2>Protected Product Action</h2>
+      <h2>Admin Product Action</h2>
       <form id="protected-demo-form">
         <label for="product-name">Product Name</label>
         <input type="text" id="product-name" name="product-name" value="Session Demo Bracelet" required>
@@ -99,8 +96,8 @@
 
     <aside>
       <h2>Accounts</h2>
-      <p><strong>Customer:</strong> customer / customer123</p>
-      <p><strong>Admin:</strong> admin / admin123</p>
+      <p><strong>Customer:</strong> customer@shopease.com / password123</p>
+      <p><strong>Admin:</strong> admin@shopease.com / admin123</p>
     </aside>
   </main>
 
